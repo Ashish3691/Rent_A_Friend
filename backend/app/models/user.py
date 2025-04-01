@@ -107,7 +107,7 @@
 # class TokenData(BaseModel):
 #     email: Optional[str] = None
 
-from pydantic import BaseModel, Field, EmailStr, validator
+from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
 from typing import Optional, Literal, List
 from datetime import datetime
 
@@ -122,10 +122,19 @@ class User(BaseModel):
     active: bool = True
     user_role: Literal['user', 'rep']
 
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {datetime: lambda dt: dt.isoformat()}
+    # class Config:
+    #     populate_by_name = True
+    #     arbitrary_types_allowed = True
+    #     json_encoders = {datetime: lambda dt: dt.isoformat()}
+    
+
+    
+           
+    
+    model_config = ConfigDict(from_attributes = True )
+
+
+    
 
 # Model used during signup (plaintext password is received and then hashed)
 class UserCreate(BaseModel):
@@ -142,7 +151,7 @@ class UserCreate(BaseModel):
     phone_number: int
     profile_picture: Optional[str] = None
 
-    @validator("phone_number")
+    @field_validator("phone_number")
     def validate_phone_number(cls, v):
         if len(str(v)) not in [10, 12]:
             raise ValueError("Invalid phone number format")
@@ -167,7 +176,7 @@ class UserType(UserSpec):
 class UserModel(UserType):
     price: Optional[int] = None
     
-    @validator("age")
+    @field_validator("age")
     def validate_age(cls, v):
         if v <= 0:
             raise ValueError("Age must be a positive number")
@@ -191,5 +200,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
-
-# This follows TDD principles by ensuring validation and testability in separate concerns.
+    
+class TokenRequest(BaseModel):
+    token: str
